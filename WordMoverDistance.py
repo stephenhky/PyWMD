@@ -1,9 +1,12 @@
+
+from itertools import product
+
 import numpy as np
 from scipy.spatial.distance import euclidean
 from scipy.sparse import dok_matrix
 from gensim.corpora import Dictionary
 from gensim.models import keyedvectors
-import cvxopt
+from cvxopt import matrix, solvers
 
 singleindexing = lambda m, i, j: m*i+j
 unpackindexing = lambda m, k: (k/m, k % m)
@@ -27,4 +30,24 @@ def index_tokens(first_sent_tokens, second_sent_tokens):
 
 
 def word_mover_distance(first_sent_tokens, second_sent_tokens, wvmodel):
-    _, d1vec, d2vec = index_tokens(first_sent_tokens, second_sent_tokens)
+    tokendict, d1vec, d2vec = index_tokens(first_sent_tokens, second_sent_tokens)
+    numwords = len(tokendict.token2id)
+
+    c = np.zeros(numwords*numwords)
+    for i, j in product(range(numwords), range(numwords)):
+        c[singleindexing(numwords, i, j)] = euclidean(wvmodel[tokendict[i]], wvmodel[tokendict[j]])
+
+    G = dok_matrix((numwords*2, numwords*numwords))
+    h = np.zeros(numwords*2)
+    for i in range(numwords):
+        for j in range(numwords):
+            G[i, singleindexing(numwords, i, j)] = 1
+            h[i] = d1vec[0, i]
+    for j in range(numwords):
+        for i in range(numwords):
+            G[numwords+j, singleindexing(numwords, i, j)] = 1
+            h[numwords+j] = d2vec[0, j]
+
+    sol = solvers.lp(matrix(c), matrix(G.toarray()), matrix(h))
+
+    return sol
