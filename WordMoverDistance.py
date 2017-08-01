@@ -37,8 +37,8 @@ def word_mover_distance(first_sent_tokens, second_sent_tokens, wvmodel):
     for i, j in product(range(numwords), range(numwords)):
         c[singleindexing(numwords, i, j)] = euclidean(wvmodel[tokendict[i]], wvmodel[tokendict[j]])
 
-    G = dok_matrix((numwords*2, numwords*numwords))
-    h = np.zeros(numwords*2)
+    G = dok_matrix((numwords*3, numwords*numwords))
+    h = np.zeros(numwords*3)
     for i in range(numwords):
         for j in range(numwords):
             G[i, singleindexing(numwords, i, j)] = 1
@@ -47,6 +47,9 @@ def word_mover_distance(first_sent_tokens, second_sent_tokens, wvmodel):
         for i in range(numwords):
             G[numwords+j, singleindexing(numwords, i, j)] = 1
             h[numwords+j] = d2vec[0, j]
+    for i in range(numwords):
+        G[2*numwords+i, singleindexing(numwords, i, i)] = 1
+        h[2*numwords+i] = 0
 
     print c.shape
     print G.toarray().shape
