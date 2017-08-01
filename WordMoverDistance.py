@@ -48,6 +48,12 @@ def word_mover_distance(first_sent_tokens, second_sent_tokens, wvmodel):
             G[numwords+j, singleindexing(numwords, i, j)] = 1
             h[numwords+j] = d2vec[0, j]
 
+    print c.shape
+    print G.toarray().shape
+    print h.shape
     sol = solvers.lp(matrix(c), matrix(G.toarray()), matrix(h))
 
     return sol
+
+# example: tokens1 = ['american', 'president']
+#          tokens2 = ['chinese', 'chairman', 'king']
