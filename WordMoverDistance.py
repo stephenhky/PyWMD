@@ -34,25 +34,41 @@ def word_mover_distance(first_sent_tokens, second_sent_tokens, wvmodel):
     numwords = len(tokendict.token2id)
 
     c = np.zeros(numwords*numwords)
-    for i, j in product(range(numwords), range(numwords)):
-        c[singleindexing(numwords, i, j)] = euclidean(wvmodel[tokendict[i]], wvmodel[tokendict[j]])
-
-    G = dok_matrix((numwords*2, numwords*numwords))
-    h = np.zeros(numwords*2)
     for i in range(numwords):
-        for j in range(numwords):
-            G[i, singleindexing(numwords, i, j)] = 1
-            h[i] = d1vec[0, i]
-    for j in range(numwords):
-        for i in range(numwords):
-            G[numwords+j, singleindexing(numwords, i, j)] = 1
-            h[numwords+j] = d2vec[0, j]
+        for j in range(i):
+            distance = euclidean(wvmodel[tokendict[i]], wvmodel[tokendict[j]])
+            c[singleindexing(numwords, i, j)] = distance
+            c[singleindexing(numwords, j, i)] = distance
+
+    G = dok_matrix((len(first_sent_tokens)+len(second_sent_tokens), numwords*numwords))
+    h = np.zeros(len(first_sent_tokens)+len(second_sent_tokens))
+    for i in range(len(first_sent_tokens)):
+        for j in range(len(second_sent_tokens)):
+            token1idx = tokendict.token2id[first_sent_tokens[i]]
+            token2idx = tokendict.token2id[second_sent_tokens[j]]
+            G[i, singleindexing(numwords, token1idx, token2idx)] = 1
+            h[i] = d1vec[0, token1idx]
+    for j in range(len(second_sent_tokens)):
+        for i in range(len(first_sent_tokens)):
+            token1idx = tokendict.token2id[first_sent_tokens[i]]
+            token2idx = tokendict.token2id[second_sent_tokens[j]]
+            G[len(first_sent_tokens)+j, singleindexing(numwords, token1idx, token2idx)] = 1
+            h[len(first_sent_tokens)+j] = d2vec[0, token2idx]
+
+    print d1vec.toarray()[0, :]
+    print d2vec.toarray()[0, :]
 
     print c.shape
     print G.toarray().shape
     print h.shape
+
+    print tokendict.token2id
+
+    print matrix(c)
+    print G.toarray()
+    print matrix(h)
     # TODO: use linear object optimization
-    sol = solvers.cpl(matrix(c), matrix(G.toarray()), matrix(h))
+    sol = solvers.lp(matrix(c), matrix(G.toarray()), matrix(h), solver='glpk')
 
     return sol
 
