@@ -6,6 +6,7 @@ from scipy.sparse import dok_matrix
 from gensim.corpora import Dictionary
 from gensim.models import keyedvectors
 from cvxopt import matrix, solvers
+import pulp
 
 singleindexing = lambda m, i, j: m*i+j
 unpackindexing = lambda m, k: (k/m, k % m)
@@ -28,7 +29,8 @@ def index_tokens(first_sent_tokens, second_sent_tokens):
     return tokendict, d1vec, d2vec
 
 
-def word_mover_distance(first_sent_tokens, second_sent_tokens, wvmodel):
+# too difficult to maintain
+def word_mover_distance_cvxopt(first_sent_tokens, second_sent_tokens, wvmodel):
     tokendict, d1vec, d2vec = index_tokens(first_sent_tokens, second_sent_tokens)
     numwords = len(tokendict.token2id)
 
@@ -93,5 +95,9 @@ def word_mover_distance(first_sent_tokens, second_sent_tokens, wvmodel):
 
     return sol
 
+
+# use LuLP
+def word_mover_distance(first_sent_tokens, second_sent_tokens, wvmodel):
+    pass
 # example: tokens1 = ['american', 'president']
 #          tokens2 = ['chinese', 'chairman', 'king']
