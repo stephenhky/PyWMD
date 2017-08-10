@@ -98,6 +98,11 @@ def word_mover_distance_cvxopt(first_sent_tokens, second_sent_tokens, wvmodel):
 
 # use LuLP
 def word_mover_distance(first_sent_tokens, second_sent_tokens, wvmodel):
-    pass
+    all_tokens = list(set(first_sent_tokens+second_sent_tokens))
+    wordvecs = {token: wvmodel[token] for token in all_tokens}
+
+
+
+
 # example: tokens1 = ['american', 'president']
 #          tokens2 = ['chinese', 'chairman', 'king']
