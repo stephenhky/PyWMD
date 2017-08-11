@@ -1,4 +1,5 @@
 
+from itertools import product
 
 import numpy as np
 from scipy.spatial.distance import euclidean
@@ -96,12 +97,14 @@ def word_mover_distance_cvxopt(first_sent_tokens, second_sent_tokens, wvmodel):
     return sol
 
 
-# use LuLP
+# use PuLP
 def word_mover_distance(first_sent_tokens, second_sent_tokens, wvmodel):
     all_tokens = list(set(first_sent_tokens+second_sent_tokens))
     wordvecs = {token: wvmodel[token] for token in all_tokens}
 
+    T = pulp.LpVariable.dicts('T_matrix', list(product(all_tokens, all_tokens)), lowBound=0)
 
+    prob = pulp.LpProblem('WMD', sense=pulp.LpMinimize)
 
 
 # example: tokens1 = ['american', 'president']
