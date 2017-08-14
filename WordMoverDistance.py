@@ -20,7 +20,7 @@ def tokens_to_fracdict(tokens):
 
 
 # use PuLP
-def word_mover_distance(first_sent_tokens, second_sent_tokens, wvmodel, lpFile=None):
+def word_mover_distance_probspec(first_sent_tokens, second_sent_tokens, wvmodel, lpFile=None):
     all_tokens = list(set(first_sent_tokens+second_sent_tokens))
     wordvecs = {token: wvmodel[token] for token in all_tokens}
 
@@ -43,6 +43,12 @@ def word_mover_distance(first_sent_tokens, second_sent_tokens, wvmodel, lpFile=N
     prob.solve()
 
     return prob
+
+
+def word_mover_distance(first_sent_tokens, second_sent_tokens, wvmodel, lpFile=None):
+    prob = word_mover_distance_probspec(first_sent_tokens, second_sent_tokens, wvmodel, lpFile=lpFile)
+    return pulp.value(prob.objective)
+
 
 # example: tokens1 = ['american', 'president']
 #          tokens2 = ['chinese', 'chairman', 'king']
